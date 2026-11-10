@@ -1,0 +1,57 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: video-bridge
+  datasource:
+    url: jdbc:h2:file:./data/video-bridge;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ''
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  jackson:
+    default-property-inclusion: non_null
+
+# 所有地址、账号都是占位值，部署前改成自己的 WVP / ZLMediaKit 实例
+bridge:
+  wvp:
+    enabled: true
+    base-url: http://127.0.0.1:18978
+    username: admin
+    password: change-me
+    token-ttl-seconds: 1200
+    request-timeout-ms: 10000
+    # 覆盖默认端点时按 WvpApi 里的键名填写，例如 playStart: /api/play/start/{0}/{1}
+    endpoints: {}
+    # 打开后才会调用 fork 版 wvp 才有的接口（永久点播、看守位、批量截图）
+    fork-extensions: false
+    # 共用 ZLM 时，播放地址按 bridge.zlm.play-host 生成，不再透传 wvp 返回的内网 IP
+    share-zlm: true
+  zlm:
+    # 服务端调 ZLM 用的地址，必须是网关自己能连通的
+    api-host: http://127.0.0.1
+    api-port: 9098
+    secret: change-me
+    vhost: __defaultVhost__
+    app: live
+    # 返回给浏览器/播放器的地址，和 api-host 分开配，避免把内网地址发给客户端
+    play-host: 127.0.0.1
+    play-http-port: 8080
+    play-rtsp-port: 554
+  onvif:
+    request-timeout-ms: 10000
+    default-port: 80
+    rtsp-port: 554
+  record:
+    max-duration-seconds: 900
+    download-buffer-seconds: 30
+    keys-retention-days: 7
+  state:
+    type: memory
+    key-prefix: 'video-bridge:'
+  keep-alive:
+    interval-seconds: 60
